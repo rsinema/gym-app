@@ -23,7 +23,8 @@ docker build -t gym-app .
 docker run -p 8080:80 gym-app
 ```
 
-This will build the docker image and start it in a container
+This will build the docker image and start it in a container. The web app will be published on localhost:8080.  
+If you want/need to use a different local port just change the `docker run` cmd to `<your-port>:80` instead of `8080:80`.
 
 ## Run the app using dotnet:
 
