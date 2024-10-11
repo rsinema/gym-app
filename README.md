@@ -4,7 +4,7 @@ Group project repo for CS 428
 
 # Setting up the repo
 
-After cloning the repo make sure to run this cmd:
+After cloning the repo make sure to run this cmd in the root dir of the repo:
 
 ```
 dotnet restore
