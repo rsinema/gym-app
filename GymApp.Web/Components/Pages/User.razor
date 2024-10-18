@@ -1,0 +1,25 @@
+@page "/user"
+@using GymApp.Models
+@using GymApp.Services.UserService
+@inject IUserService UserService
+
+<h3>User Information</h3>
+
+@if (user != null)
+{
+    <p>ID: @user.Id</p>
+    <p>Name: @user.Name</p>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private GymApp.Models.User? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await Task.Run(() => UserService.GetUser());
+    }
+}

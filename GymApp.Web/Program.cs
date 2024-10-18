@@ -1,10 +1,17 @@
-using GymApp.Components;
+using GymApp.Repositories;
+using GymApp.Repositories.UserRepository;
+using GymApp.Services.UserService;
+using GymApp.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register your repository and service
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

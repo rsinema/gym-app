@@ -18,7 +18,6 @@ Make sure Docker Desktop is installed or the Docker CLI, and that the Docker dae
 Run these cmds:
 
 ```
-cd GymApp
 docker build -t gym-app .
 docker run -p 8080:80 gym-app
 ```
@@ -31,7 +30,7 @@ If you want/need to use a different local port just change the `docker run` cmd 
 Install the dotnet8 sdk and to run a live server with hot reload enabled run this cmd:
 
 ```
-cd GymApp
+cd GymApp.Web
 dotnet watch
 ```
 
