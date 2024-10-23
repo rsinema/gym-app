@@ -1,7 +1,49 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<div class="home-container">
+    <header class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to GymTrack</h1>
+            <p class="hero-subtitle">Track your reps. Achieve your goals. Stay consistent.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary-home" @onclick="NavigateToLogin">Login</button>
+                <button class="btn btn-secondary" @onclick="NavigateToRegister">Register</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="Images/GymEquip.jpeg" alt="Gym Tracking Illustration" />
+        </div>
+    </header>
 
-<h1>Hello, world!</h1>
+    <section class="features-section">
+        <h2>Why Choose GymTrack?</h2>
+        <div class="features">
+            <div class="feature-card">
+                <h3>Track Progress</h3>
+                <p>Monitor your reps, sets, and performance effortlessly.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Set Goals</h3>
+                <p>Define your goals and stay motivated with visual progress tracking.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Stay Consistent</h3>
+                <p>Receive reminders and insights to keep you on track.</p>
+            </div>
+        </div>
+    </section>
+</div>
 
-Welcome to your new app.    
+@code {
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}
