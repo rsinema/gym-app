@@ -4,5 +4,6 @@ namespace GymApp.Repositories.UserRepository;
 
 public interface IUserRepository
 {
-    User GetUser();
+    Task<User> GetUser(string username);
+    Task AddUser(User user);
 }

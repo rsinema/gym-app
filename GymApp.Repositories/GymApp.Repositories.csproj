@@ -10,4 +10,8 @@
     <ProjectReference Include="..\GymApp.Models\GymApp.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+  </ItemGroup>
+
 </Project>
