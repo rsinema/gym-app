@@ -1,0 +1,99 @@
+@page "/dashboard"
+@rendermode InteractiveServer
+
+<h3>Exercise Dashboard</h3>
+
+<div class="dashboard">
+    <div class="container">
+        <div class="add-exercise-form">
+            <div class="form-group">
+                <label>Exercise Name:</label>
+                <input type="text" @bind="newExercise.Name" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Exercise Type:</label>
+                <select @bind="newExercise.Type" class="form-control">
+                    <option value="">Select an Exercise Type</option>
+                    <option value="Lifting">Lifting</option>
+                    <option value="Cardio">Cardio</option>
+                </select>
+            </div>
+
+            @if (newExercise.Type == "Lifting")
+            {
+                <div class="form-group">
+                    <label>Reps:</label>
+                    <input type="number" @bind="newExercise.Reps" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" @bind="newExercise.Weight" class="form-control" />
+                </div>
+            }
+            else if (newExercise.Type == "Cardio")
+            {
+                <div class="form-group">
+                    <label>Time (in minutes):</label>
+                    <input type="number" @bind="newExercise.Time" class="form-control" />
+                </div>
+            }
+
+            <div class="button-container">
+                <button class="btn btn-secondary" @onclick="AddExercise">Add Exercise</button>
+            </div>
+        </div>
+
+        <div class="exercise-list">
+            <h4>Exercises List</h4>
+            <ul>
+                @foreach (var exercise in exercises)
+                {
+                    <li>
+                        <strong>@exercise.Name</strong> - @exercise.Type
+                        @if (exercise.Type == "Lifting")
+                        {
+                            <span> - Reps: @exercise.Reps, Weight: @exercise.Weight kg</span>
+                        }
+                        else if (exercise.Type == "Cardio")
+                        {
+                            <span> - Time: @exercise.Time minutes</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="profile-section">
+        <h4>Hello, Admin!</h4>
+        <p>Welcome back! Here are some of your recent PR exercises:</p>
+        <ul class="pr-list">
+            <li>Bench Press: 100 kg - 10 reps</li>
+            <li>Deadlift: 150 kg - 5 reps</li>
+            <li>5k Run: 25 minutes</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private ExerciseModel newExercise = new ExerciseModel();
+    private List<ExerciseModel> exercises = new List<ExerciseModel>();
+
+    private void AddExercise()
+    {
+        if (!string.IsNullOrWhiteSpace(newExercise.Name) && !string.IsNullOrWhiteSpace(newExercise.Type))
+        {
+            exercises.Add(newExercise);
+            newExercise = new ExerciseModel(); // Reset the input fields
+        }
+    }
+
+    public class ExerciseModel
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public int? Reps { get; set; }
+        public double? Weight { get; set; }
+        public int? Time { get; set; }
+    }
+}
