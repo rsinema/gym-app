@@ -35,3 +35,15 @@ dotnet watch
 ```
 
 This will open a web page with the server rendered application. Any changes that are made will be updated live.
+
+## Goals - Things we want complete by end of Nov 2
+
+Login/Register/Session Tracking on front and backend, testing this
+
+User can create persisting account via registration page
+
+Registered user can login via login page
+
+Registered user will get an error if they register with their same username
+
+User will get an error if their username/password is incorrect
