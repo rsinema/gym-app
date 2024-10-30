@@ -16,35 +16,31 @@ public class UserService() : IUserService
     private string GenerateJWT(User user) {
         // User is logged in for 1 hour after token creation
         DateTime expires = DateTime.UtcNow.AddHours(1);
-            var payload = new Dictionary<string, object>
+        var payload = new Dictionary<string, object>
             {
                 {"user_id", user.Id},
                 {"username", user.Username},
                 {"expires", expires}
             };
 
-            return JWT.JsonWebToken.Encode(payload, _signingSecret, JWT.JwtHashAlgorithm.HS256);
+        return JWT.JsonWebToken.Encode(payload, _signingSecret, JWT.JwtHashAlgorithm.HS256);
     }
 
     // Use this function to check if a user is still "logged in"
     public bool CheckLoggedIn(string jwt, int userId) {
-        try
-            {
-                var payload = JWT.JsonWebToken.Decode(jwt, _signingSecret);
-                dynamic obj = JObject.Parse(payload);
-                TimeSpan ts = DateTime.UtcNow - DateTime.Parse(obj.expires.ToString());
+        try {
+            var payload = JWT.JsonWebToken.Decode(jwt, _signingSecret);
+            dynamic obj = JObject.Parse(payload);
+            TimeSpan ts = DateTime.UtcNow - DateTime.Parse(obj.expires.ToString());
 
-                if ((obj.user_id == userId) && ts.Days < 1)
-                {
-                    return true;
-                }
+            if ((obj.user_id == userId) && ts.Days < 1) {
+                return true;
+            }
 
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return false;
+        } catch (Exception) {
+            return false;
+        }
     }
 
     public async Task<string> LoginUser(string username, string password) {
@@ -88,5 +84,5 @@ public class UserService() : IUserService
         string jwt = GenerateJWT(newUser);
         return jwt;
     }
-    
+
 }
