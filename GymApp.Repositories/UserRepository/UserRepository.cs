@@ -1,5 +1,5 @@
-﻿using GymApp.Models;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
+using GymApp.Models;
 
 namespace GymApp.Repositories.UserRepository;
 
@@ -10,6 +10,7 @@ public class UserRepository : IUserRepository
     private readonly IMongoCollection<User> _userCollection;
 
     public UserRepository() {
+        // TODO: fix hardcoded link (dotenv equivalent?)
         _client = new MongoClient("mongodb+srv://gym-app-root:gym-app-password@gym-app.ils1q.mongodb.net/?retryWrites=true&w=majority&appName=gym-app");
         _database = _client.GetDatabase("gym-app");
         _userCollection = _database.GetCollection<User>("user");
