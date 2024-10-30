@@ -11,7 +11,7 @@ public class UserService() : IUserService
     private readonly PasswordHasher<object> _hasher = new PasswordHasher<object>();
 
     // TODO: find a way to inject secret (dotenv equivalent to C#??)
-    private readonly string _signingSecret = "dummy-secret";
+    private readonly string _signingKey = "dummy-secret";
 
     private string GenerateJWT(User user) {
         // User is logged in for 1 hour after token creation
@@ -23,13 +23,13 @@ public class UserService() : IUserService
                 {"expires", expires}
             };
 
-        return JWT.JsonWebToken.Encode(payload, _signingSecret, JWT.JwtHashAlgorithm.HS256);
+        return JWT.JsonWebToken.Encode(payload, _signingKey, JWT.JwtHashAlgorithm.HS256);
     }
 
     // Use this function to check if a user is still "logged in"
     public bool CheckLoggedIn(string jwt, int userId) {
         try {
-            var payload = JWT.JsonWebToken.Decode(jwt, _signingSecret);
+            var payload = JWT.JsonWebToken.Decode(jwt, _signingKey);
             dynamic obj = JObject.Parse(payload);
             TimeSpan ts = DateTime.UtcNow - DateTime.Parse(obj.expires.ToString());
 
