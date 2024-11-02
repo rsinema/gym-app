@@ -5,6 +5,18 @@ using GymApp.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add this before building the app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -20,6 +32,9 @@ builder.Services.AddScoped<IUserService, UserService>(provider => {
 });
 
 var app = builder.Build();
+
+// Add this after var app = builder.Build();
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

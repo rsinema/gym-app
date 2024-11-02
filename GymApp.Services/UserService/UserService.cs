@@ -46,7 +46,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<string> LoginUser(string username, string password) {
+    public async Task<bool> LoginUser(string username, string password) {
         // getuser
         User user;
         try {
@@ -61,7 +61,7 @@ public class UserService : IUserService
         // if match, logged in
         if (passwordMatches) {
             string jwt = GenerateJWT(user);
-            return jwt;
+            return true;
         } else {
             throw new ArgumentException("Invalid Password.");
         }
