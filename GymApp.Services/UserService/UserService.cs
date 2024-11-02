@@ -5,13 +5,16 @@ using GymApp.Models;
 
 namespace GymApp.Services.UserService;
 
-public class UserService() : IUserService
+public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository = new UserRepository();
+    private readonly IUserRepository _userRepository;
     private readonly PasswordHasher<object> _hasher = new PasswordHasher<object>();
-
-    // TODO: find a way to inject secret (dotenv equivalent to C#??)
-    private readonly string _signingKey = "dummy-secret";
+    private string _signingKey;
+    public UserService(IUserRepository userRepository, string signingKey)
+    {
+        _userRepository = userRepository;
+        _signingKey = signingKey;
+    }
 
     private string GenerateJWT(User user) {
         // User is logged in for 1 hour after token creation
@@ -53,7 +56,7 @@ public class UserService() : IUserService
         }
 
         // check hashpassword
-        bool passwordMatches = _hasher.VerifyHashedPassword(null, user.Password, password) == PasswordVerificationResult.Success;
+        bool passwordMatches = _hasher.VerifyHashedPassword(_signingKey, user.Password, password) == PasswordVerificationResult.Success;
 
         // if match, logged in
         if (passwordMatches) {
@@ -70,10 +73,10 @@ public class UserService() : IUserService
             throw new Exception("User already exists.");
         }
 
-        string hashedPassword = _hasher.HashPassword(null , plainPassword);
+        string hashedPassword = _hasher.HashPassword(_signingKey , plainPassword);
         var random = new Random();
         int id = random.Next(100_000_000, 1_000_000_000);
-        User newUser = new User { Id = id, Username = username, Password = hashedPassword };
+        User newUser = new User(username, hashedPassword);
         
         try {
             await _userRepository.AddUser(newUser);
@@ -85,4 +88,8 @@ public class UserService() : IUserService
         return jwt;
     }
 
+    public Task<User> GetUser()
+    {
+        return Task.FromResult(new User("Riley", "password"));
+    }
 }

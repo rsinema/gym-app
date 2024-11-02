@@ -9,9 +9,8 @@ public class UserRepository : IUserRepository
     private readonly IMongoDatabase _database;
     private readonly IMongoCollection<User> _userCollection;
 
-    public UserRepository() {
-        // TODO: fix hardcoded link (dotenv equivalent?)
-        _client = new MongoClient("mongodb+srv://gym-app-root:gym-app-password@gym-app.ils1q.mongodb.net/?retryWrites=true&w=majority&appName=gym-app");
+    public UserRepository(string connString) {
+        _client = new MongoClient(connString);
         _database = _client.GetDatabase("gym-app");
         _userCollection = _database.GetCollection<User>("user");
     }
