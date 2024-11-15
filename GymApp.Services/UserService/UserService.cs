@@ -40,7 +40,7 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         }
     }
 
-    public async Task<Dictionary<string, object>> LoginUser(string username, string password) 
+    public async Task<AuthModel> LoginUser(string username, string password) 
     {
         User user;
         try 
@@ -56,18 +56,13 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
             _hasher.VerifyHashedPassword(signingKey, user.Password, password) == PasswordVerificationResult.Success;
 
         if (!passwordMatches) throw new ArgumentException("Invalid Password.");
-        var result = new Dictionary<string, object>
-        {
-            {"user_id", user.Id},
-            {"jwt", GenerateJWT(user)}
-        };
-            
-        return result;
+        var jwt = GenerateJWT(user);
 
+        return new AuthModel(jwt, user.Id);
     }
 
     // TODO: check if user exists before creating a new one
-    public async Task<Dictionary<string, object>> RegisterUser(string username, string plainPassword)
+    public async Task<AuthModel> RegisterUser(string username, string plainPassword)
     {
         var hashedPassword = _hasher.HashPassword(signingKey , plainPassword);
         var random = new Random();
@@ -77,14 +72,9 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         try
         {
             await userRepository.AddUser(newUser);
-
-            var result = new Dictionary<string, object>
-            {
-                { "user_id", newUser.Id },
-                { "jwt", GenerateJWT(newUser) }
-            };
+            var jwt = GenerateJWT(newUser);
             
-            return result;
+            return new AuthModel(jwt, newUser.Id);
         } 
         catch 
         {
