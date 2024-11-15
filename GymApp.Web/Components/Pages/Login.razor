@@ -1,14 +1,16 @@
 @page "/login"
+@using GymApp.Services.UserService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@inject IUserService UserService
 
 <div class="login-container">
     <h2>Login</h2>
 
     <div class="form-group">
         <label for="username">Username</label>
-        <input id="username" type="text" @bind="user.Username" class="form-control" @onkeydown="HandleKeyPress" />
-        @if (showUsernameError)
+        <input id="username" type="text" @bind="_user.Username" class="form-control" @onkeydown="HandleKeyPress" />
+        @if (_showUsernameError)
         {
             <p class="validation-message">Username is required.</p>
         }
@@ -16,8 +18,8 @@
 
     <div class="form-group">
         <label for="password">Password</label>
-        <input id="password" type="password" @bind="user.Password" class="form-control" @onkeydown="HandleKeyPress" />
-        @if (showPasswordError)
+        <input id="password" type="password" @bind="_user.Password" class="form-control" @onkeydown="HandleKeyPress" />
+        @if (_showPasswordError)
         {
             <p class="validation-message">Password is required.</p>
         }
@@ -27,35 +29,35 @@
         <button class="btn btn-secondary" @onclick="HandleSubmit">Login</button>
     </div>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
+    @if (!string.IsNullOrEmpty(_errorMessage))
     {
-        <p class="error-message">@errorMessage</p>
+        <p class="error-message">@_errorMessage</p>
     }
 </div>
 
 @code {
-    private UserModel user = new();
-    private string errorMessage;
-    private bool showUsernameError;
-    private bool showPasswordError;
+    private readonly UserModel _user = new();
+    private string? _errorMessage;
+    private bool _showUsernameError;
+    private bool _showPasswordError;
 
     private void HandleSubmit()
     {
         ValidateForm();
 
-        if (showUsernameError || showPasswordError)
+        if (_showUsernameError || _showPasswordError)
         {
-            errorMessage = "Please fill in all required fields.";
+            _errorMessage = "Please fill in all required fields.";
             return;
         }
         
-        if (AuthenticateUser(user))
+        if (AuthenticateUser(_user))
         {
             Navigation.NavigateTo("/dashboard");
         }
         else
         {
-            errorMessage = "Invalid username or password.";
+            _errorMessage = "Invalid username or password.";
         }
     }
 
@@ -69,18 +71,27 @@
 
     private void ValidateForm()
     {
-        showUsernameError = string.IsNullOrEmpty(user.Username);
-        showPasswordError = string.IsNullOrEmpty(user.Password);
+        _showUsernameError = string.IsNullOrEmpty(_user.Username);
+        _showPasswordError = string.IsNullOrEmpty(_user.Password);
     }
     
     private bool AuthenticateUser(UserModel user)
     {
-        return user.Username == "admin" && user.Password == "password";
+        try
+        {
+            UserService.LoginUser(user.Username, user.Password);
+            return true;
+        }
+        catch (Exception e)
+        {
+            _errorMessage = e.Message;
+            return false;
+        }
     }
 
     public class UserModel
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
     }
 }
