@@ -1,30 +1,14 @@
 @page "/register"
+@using GymApp.Services.UserService
+@using GymApp.Models
 @inject NavigationManager Navigation
+@inject IUserService UserService
 @rendermode InteractiveServer
-
 
 <div class="register-container">
     <h2>Register</h2>
 
     <form @onsubmit="HandleRegister">
-        <div class="form-group">
-            <label for="firstname">First Name</label>
-            <input id="firstname" type="text" @bind="newUser.Firstname" class="form-control" />
-            @if (showFirstnameError)
-            {
-                <p class="validation-message">First name is required.</p>
-            }
-        </div>
-
-        <div class="form-group">
-            <label for="lastname">Last Name</label>
-            <input id="lastname" type="text" @bind="newUser.Lastname" class="form-control" />
-            @if (showLastnameError)
-            {
-                <p class="validation-message">Last name is required.</p>
-            }
-        </div>
-
         <div class="form-group">
             <label for="username">Username</label>
             <input id="username" type="text" @bind="newUser.Username" class="form-control" />
@@ -62,39 +46,36 @@
 </div>
 
 @code {
-    private UserModel newUser = new();
+    private User newUser = new(0, string.Empty, string.Empty);
     private string confirmPassword;
     private string errorMessage;
     private bool showUsernameError;
     private bool showPasswordError;
     private bool showConfirmPasswordError;
-    private bool showFirstnameError;
-    private bool showLastnameError;
 
     private async Task HandleRegister()
     {
+        Console.Write("we are here\n");
         showUsernameError = string.IsNullOrEmpty(newUser.Username);
         showPasswordError = string.IsNullOrEmpty(newUser.Password);
-        showFirstnameError = string.IsNullOrEmpty(newUser.Firstname);
-        showLastnameError = string.IsNullOrEmpty(newUser.Lastname);
 
         showConfirmPasswordError = newUser.Password != confirmPassword;
 
-        if (showUsernameError || showPasswordError || showConfirmPasswordError || showFirstnameError || showLastnameError)
+        if (showUsernameError || showPasswordError || showConfirmPasswordError )
         {
             errorMessage = "Please fill in all required fields correctly.";
             return;
         }
-        
-        
-        Navigation.NavigateTo("/dashboard");
-    }
-
-    public class UserModel
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Firstname { get; set; }
-        public string Lastname { get; set; }
+        var dict = await UserService.RegisterUser(newUser.Username, newUser.Password);
+        Console.WriteLine(dict.GetValueOrDefault("jwt"));
+        if (dict.ContainsKey("jwt"))
+        {
+            Navigation.NavigateTo("/home");
+            Console.Write("we did something\n");
+        }
+        else
+        {
+            errorMessage = "Invalid username or password.";
+        }
     }
 }

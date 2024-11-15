@@ -37,24 +37,25 @@
 </div>
 
 @code {
-    private GymApp.Models.User _user = new User(0,"", "");
-    private string? _errorMessage;
-    private bool _showUsernameError;
-    private bool _showPasswordError;
+    private GymApp.Models.User user = new User(0, "", "");
+    private string? errorMessage;
+    private bool showUsernameError;
+    private bool showPasswordError;
 
     private async void HandleSubmit()
     {
-        ValidateForm();
+        Console.Write("we are here\n");
+        showUsernameError = string.IsNullOrEmpty(user.Username);
+        showPasswordError = string.IsNullOrEmpty(user.Password);
 
         if (_showUsernameError || _showPasswordError)
         {
             _errorMessage = "Please fill in all required fields.";
             return;
         }
-
-        Dictionary<string, object> jwt = await UserService.LoginUser(_user.Username, _user.Password);
-        
-        if (jwt.ContainsKey("jwt"))
+        var dict = await UserService.LoginUser(user.Username, user.Password);
+        Console.WriteLine(dict.GetValueOrDefault("jwt"));
+        if (dict.ContainsKey("jwt"))
         {
             Navigation.NavigateTo("/home");
             Console.Write("we did something\n");
