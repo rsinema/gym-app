@@ -57,7 +57,6 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         var passwordMatches = 
             _hasher.VerifyHashedPassword(signingKey, user.Password, password) == PasswordVerificationResult.Success;
 
-        // if match, logged in
         if (passwordMatches)
         {
             return GenerateJWT(user);
@@ -89,10 +88,16 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
             throw new Exception("Error registering user.");
         }
     }
-
-    // TODO: fix hardcoded value
-    public Task<User> GetUser()
+    
+    public async Task<User> GetUser(string username)
     {
-        return Task.FromResult(new User("Riley", "password"));
+        try
+        {
+            return await userRepository.GetUser(username);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error getting user.", ex);
+        }
     }
 }
