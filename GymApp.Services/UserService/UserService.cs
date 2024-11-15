@@ -86,7 +86,7 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
             
             return result;
         } 
-        catch 
+        catch
         {
             throw new Exception("Error registering user.");
         }
