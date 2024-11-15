@@ -1,31 +1,47 @@
 ﻿using GymApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GymApp.Repositories.ExerciseRepository;
 
 namespace GymApp.Services.ExerciseService;
 public class ExerciseService(IExerciseRepository exerciseRepository) : IExerciseService
 {
     public async Task<Exercise> GetExerciseAsync(int id)
     {
-        return await exerciseRepository.GetExerciseAsync(id);
+        try
+        {
+            return await exerciseRepository.GetExerciseAsync(id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw new Exception(ex.Message);
+        }
     }
 
-    public async Task<List<Exercise>> GetAllExercisesAsync(int userId)
+    public async Task<List<Exercise>?> GetAllExercisesAsync(int userId)
     {
-        return await exerciseRepository.GetAllExercisesAsync(userId);
+        try
+        {
+            return await exerciseRepository.GetAllExercisesAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw new Exception(ex.Message);
+        }
     }
 
-    public async Task<Exercise> AddExerciseAsync(Exercise exercise)
+    public async Task<Exercise?> AddExerciseAsync(Exercise exercise)
     {
-        return await exerciseRepository.AddExerciseAsync(exercise);
+        try
+        {
+            return await exerciseRepository.AddExerciseAsync(exercise);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw new Exception(ex.Message);
+        }
     }
-
-
-
-
-
+    
 }
 
