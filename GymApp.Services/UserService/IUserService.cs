@@ -4,8 +4,8 @@ namespace GymApp.Services.UserService;
 
 public interface IUserService
 {
-    Task<User> GetUser();
-    Task<string> LoginUser(string username, string password);
-    Task<string> RegisterUser(string username, string plainPassword);
-    bool CheckLoggedIn(string jwt, int userId);
+    Task<User> GetUser(string username);
+    Task<Dictionary<string, object>> LoginUser(string username, string password);
+    Task<Dictionary<string, object>> RegisterUser(string username, string plainPassword);
+    bool CheckAuthentication(string jwt, int userId);
 }

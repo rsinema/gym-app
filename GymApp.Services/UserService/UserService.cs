@@ -24,7 +24,7 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
     }
 
     // Use this function to check if a user is still "logged in"
-    public bool CheckLoggedIn(string jwt, int userId)
+    public bool CheckAuthentication(string jwt, int userId)
     {
         try
         {
@@ -40,9 +40,8 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         }
     }
 
-    public async Task<string> LoginUser(string username, string password) 
+    public async Task<Dictionary<string, object>> LoginUser(string username, string password) 
     {
-        // getuser
         User user;
         try 
         {
@@ -52,47 +51,56 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         {
             throw new Exception("Error fetching user.");
         }
-
-        // check hashpassword
+        
         var passwordMatches = 
             _hasher.VerifyHashedPassword(signingKey, user.Password, password) == PasswordVerificationResult.Success;
 
-        // if match, logged in
-        if (passwordMatches)
+        if (!passwordMatches) throw new ArgumentException("Invalid Password.");
+        var result = new Dictionary<string, object>
         {
-            return GenerateJWT(user);
-        } 
-        else 
-        {
-            throw new ArgumentException("Invalid Password.");
-        }
+            {"user_id", user.Id},
+            {"jwt", GenerateJWT(user)}
+        };
+            
+        return result;
+
     }
 
-    public async Task<string> RegisterUser(string username, string plainPassword)
+    // TODO: check if user exists before creating a new one
+    public async Task<Dictionary<string, object>> RegisterUser(string username, string plainPassword)
     {
-        // check if logged in
-        if (userRepository.GetUser(username) != null) throw new Exception("User already exists.");
-
         var hashedPassword = _hasher.HashPassword(signingKey , plainPassword);
         var random = new Random();
         var id = random.Next(100_000_000, 1_000_000_000);
         var newUser = new User(id, username, hashedPassword);
         
-        try 
+        try
         {
             await userRepository.AddUser(newUser);
-            var jwt = GenerateJWT(newUser);
-            return jwt;
+
+            var result = new Dictionary<string, object>
+            {
+                { "user_id", newUser.Id },
+                { "jwt", GenerateJWT(newUser) }
+            };
+            
+            return result;
         } 
         catch 
         {
             throw new Exception("Error registering user.");
         }
     }
-
-    // TODO: fix hardcoded value
-    public Task<User> GetUser()
+    
+    public async Task<User> GetUser(string username)
     {
-        return Task.FromResult(new User("Riley", "password"));
+        try
+        {
+            return await userRepository.GetUser(username);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error getting user.", ex);
+        }
     }
 }
