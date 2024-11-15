@@ -3,6 +3,7 @@
 @using GymApp.Models
 @inject NavigationManager Navigation
 @inject IUserService UserService
+@rendermode InteractiveServer
 
 <div class="login-container">
     <h2>Login</h2>
@@ -36,13 +37,14 @@
 </div>
 
 @code {
-    private GymApp.Models.User user = new User("", "");
+    private GymApp.Models.User user = new User(0, "", "");
     private string? errorMessage;
     private bool showUsernameError;
     private bool showPasswordError;
 
     private async void HandleSubmit()
     {
+        Console.Write("we are here\n");
         showUsernameError = string.IsNullOrEmpty(user.Username);
         showPasswordError = string.IsNullOrEmpty(user.Password);
 
@@ -51,8 +53,9 @@
             errorMessage = "Please fill in all required fields.";
             return;
         }
-        
-        if (await UserService.LoginUser(user.Username, user.Password))
+        var dict = await UserService.LoginUser(user.Username, user.Password);
+        Console.WriteLine(dict.GetValueOrDefault("jwt"));
+        if (dict.ContainsKey("jwt"))
         {
             Navigation.NavigateTo("/home");
             Console.Write("we did something\n");
