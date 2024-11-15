@@ -1,5 +1,8 @@
 @page "/login"
+@using GymApp.Services.UserService
+@using GymApp.Models
 @inject NavigationManager Navigation
+@inject IUserService UserService
 
 <div class="login-container">
     <h2>Login</h2>
@@ -33,12 +36,12 @@
 </div>
 
 @code {
-    private UserModel user = new();
-    private string errorMessage;
+    private GymApp.Models.User user = new User("", "");
+    private string? errorMessage;
     private bool showUsernameError;
     private bool showPasswordError;
 
-    private void HandleSubmit()
+    private async void HandleSubmit()
     {
         showUsernameError = string.IsNullOrEmpty(user.Username);
         showPasswordError = string.IsNullOrEmpty(user.Password);
@@ -49,25 +52,16 @@
             return;
         }
         
-        if (AuthenticateUser(user))
+        if (await UserService.LoginUser(user.Username, user.Password))
         {
-            Navigation.NavigateTo("/dashboard");
+            Navigation.NavigateTo("/home");
+            Console.Write("we did something\n");
         }
         else
         {
             errorMessage = "Invalid username or password.";
         }
     }
-    
-    private bool AuthenticateUser(UserModel user)
-    {
-        return user.Username == "admin" && user.Password == "password";
-    }
 
-    public class UserModel
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
 }
 

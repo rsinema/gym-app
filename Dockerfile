@@ -22,4 +22,5 @@ WORKDIR /app
 COPY --from=build-env /app/out .
 EXPOSE 80
 ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Development
 ENTRYPOINT ["dotnet", "GymApp.Web.dll"]

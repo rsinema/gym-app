@@ -1,15 +1,29 @@
-﻿using GymApp.Models;
+﻿using MongoDB.Driver;
+using GymApp.Models;
 
 namespace GymApp.Repositories.UserRepository;
 
 public class UserRepository : IUserRepository
 {
-    public UserRepository()
+    private readonly MongoClient _client;
+    private readonly IMongoDatabase _database;
+    private readonly IMongoCollection<User> _userCollection;
+
+    public UserRepository(string connString)
     {
+        _client = new MongoClient(connString);
+        _database = _client.GetDatabase("gym-app");
+        _userCollection = _database.GetCollection<User>("user");
     }
 
-    public User GetUser()
+    public async Task<User> GetUser(string username)
     {
-        return new User { Id = 1, Name = "Riley"};
+        var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+        return await _userCollection.Find(filter).FirstOrDefaultAsync();
+    }
+
+    public async Task AddUser(User user)
+    {
+        await _userCollection.InsertOneAsync(user);
     }
 }
