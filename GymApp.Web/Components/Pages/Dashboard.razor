@@ -1,0 +1,174 @@
+@page "/dashboard"
+@using GymApp.Services.LocalStorage
+@inject LocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="dashboard_container">
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else if (username != null)
+    {
+        <h1>Welcome, @username!</h1>
+
+        <!-- Lift Form -->
+        <div class="exercise_container">
+            <div class="lift_form">
+                <h2>Add Lift Exercise</h2>
+                <form @onsubmit="AddLiftExercise">
+                    <div class="exercise_group">
+                        <label for="liftWeight">Weight (lbs):</label>
+                        <input type="number" id="liftWeight" @bind="liftWeight" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="liftReps">Reps:</label>
+                        <input type="number" id="liftReps" @bind="liftReps" required class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-lift">Add Lift Exercise</button>
+                </form>
+            </div>
+
+            <!-- Cardio Form -->
+            <div class="cardio_form">
+                <h2>Add Cardio Exercise</h2>
+                <form @onsubmit="AddCardioExercise">
+                    <div class="exercise_group">
+                        <label for="cardioTime">Time (minutes):</label>
+                        <input type="number" id="cardioTime" @bind="cardioTime" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="cardioDistance">Distance (miles):</label>
+                        <input type="number" id="cardioDistance" @bind="cardioDistance" required class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-cardio">Add Cardio Exercise</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Week Calendar -->
+        <div class="week-calendar">
+            @if (exerciseEntries.Any())
+            {
+                <ul>
+                    @foreach (ExerciseEntry entry in exerciseEntries.OrderBy(e => e.Date))
+                    {
+                        <li>
+                            @entry.Date: @entry.Type Exercise - 
+                            @if (entry.Type == "Lift")
+                            {
+                                <p>Weight: @entry.Weight kg, Reps: @entry.Reps sets</p>
+                            }
+                            else if (entry.Type == "Cardio")
+                            {
+                                <p>Time: @entry.Time minutes, Distance: @entry.Distance km</p>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No exercises scheduled yet.</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string? username;
+    private bool isLoading = true;
+    private DateTime exerciseDate = DateTime.Now;
+
+    // Inputs for Lift Exercise
+    private int liftWeight;
+    private int liftReps;
+
+    // Inputs for Cardio Exercise
+    private int cardioTime;
+    private double cardioDistance;
+
+    private List<ExerciseEntry> exerciseEntries = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                username = await LocalStorage.GetItemAsync("username");
+                var token = await LocalStorage.GetItemAsync("jwt_token");
+
+                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
+                {
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+
+                isLoading = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
+                Navigation.NavigateTo("/login");
+            }
+        }
+    }
+
+    private async Task AddLiftExercise()
+    {
+        if (liftWeight <= 0 || liftReps <= 0)
+        {
+            // Show error message
+            return;
+        }
+        exerciseEntries.Add(new ExerciseEntry
+        {
+            Type = "Lift",
+            Date = exerciseDate,
+            Weight = liftWeight,
+            Reps = liftReps
+        });
+
+        // Clear inputs
+        liftWeight = 0;
+        liftReps = 0;
+
+        await Task.CompletedTask;
+
+    }
+
+    private async Task AddCardioExercise()
+    {
+        if (cardioTime <= 0 || cardioDistance <= 0)
+        {
+            // Show error message
+            return;
+        }
+        exerciseEntries.Add(new ExerciseEntry
+        {
+            Type = "Cardio",
+            Date = exerciseDate,
+            Time = cardioTime,
+            Distance = cardioDistance
+        });
+
+        // Clear inputs
+        cardioTime = 0;
+        cardioDistance = 0;
+
+        await Task.CompletedTask;
+    }
+
+    private class ExerciseEntry
+    {
+        public string Type { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public int Weight { get; set; }
+        public int Reps { get; set; }
+        public int Time { get; set; }
+        public double Distance { get; set; }
+    }
+}

@@ -52,7 +52,7 @@
         {
             await LocalStorage.SetItemAsync("jwt_token", token);
             await LocalStorage.SetItemAsync("username", user.Username);
-            Navigation.NavigateTo("/test-auth");
+            Navigation.NavigateTo("/dashboard");
         }
         else
         {

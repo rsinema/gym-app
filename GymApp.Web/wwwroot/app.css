@@ -182,3 +182,136 @@ h1:focus {
 }
 
 
+
+/*dashboard css*/
+
+/* Welcome Header */
+.dashboard_container h1 {
+    font-size: 36px;
+    color: #1A2E45;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Flex container for side-by-side forms */
+.exercise_container {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+/* Form container styles for Lift and Cardio forms */
+.lift_form,
+.cardio_form {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 48%; /* Ensures forms are side by side */
+}
+
+/* Form headings */
+.lift_form h2,
+.cardio_form h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Exercise form group (label and input styling) */
+.exercise_group {
+    margin-bottom: 15px;
+}
+
+.exercise_group label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.exercise_group .form-control {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.exercise_group .form-control:focus {
+    border-color: #E63946;
+    outline: none;
+}
+
+/* Button styling */
+.btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.btn-cardio {
+    background-color: #E63946; /* Red color */
+    color: white;
+}
+
+.btn-cadio:hover {
+    background-color: #d0303d; /* Slightly darker shade */
+}
+
+.btn-lift {
+    background-color: #007BFF; /* Blue color */
+    color: white;
+}
+
+.btn-lift:hover {
+    background-color: #0056b3; /* Darker blue */
+}
+
+/* Week Calendar Styles */
+.week-calendar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.week-calendar ul li {
+    background-color: #f1f2f6;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.week-calendar ul li p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #333;
+    text-align: left;
+}
+
+/* No exercise message */
+.week-calendar p {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+}
+
+/* Responsiveness: Stack forms on smaller screens */
+@media (max-width: 768px) {
+    .exercise_container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lift_form,
+    .cardio_form {
+        width: 100%;
+    }
+}
