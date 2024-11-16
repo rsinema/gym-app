@@ -1,8 +1,10 @@
 @page "/login"
+@using GymApp.Services.LocalStorage
 @using GymApp.Services.UserService
 @using GymApp.Models
 @inject NavigationManager Navigation
 @inject IUserService UserService
+@inject LocalStorageService LocalStorage
 @rendermode InteractiveServer
 
 <div class="login-container">
@@ -37,34 +39,25 @@
 </div>
 
 @code {
-    private GymApp.Models.User user = new User(0, "", "");
+    private User user = new User(0, "", "");
     private string? errorMessage;
     private bool showUsernameError;
     private bool showPasswordError;
 
     private async void HandleSubmit()
     {
-        Console.Write("we are here\n");
-        showUsernameError = string.IsNullOrEmpty(user.Username);
-        showPasswordError = string.IsNullOrEmpty(user.Password);
-
-        if (showUsernameError || showPasswordError)
+        var (success, token, error) = await UserService.LoginUser(user.Username, user.Password);
+        
+        if (success && token != null)
         {
-            errorMessage = "Please fill in all required fields.";
-            return;
-        }
-        var dict = await UserService.LoginUser(user.Username, user.Password);
-        Console.WriteLine(dict.GetValueOrDefault("jwt"));
-        if (dict.ContainsKey("jwt"))
-        {
-            Navigation.NavigateTo("/home");
-            Console.Write("we did something\n");
+            await LocalStorage.SetItemAsync("jwt_token", token);
+            await LocalStorage.SetItemAsync("username", user.Username);
+            Navigation.NavigateTo("/test-auth");
         }
         else
         {
-            errorMessage = "Invalid username or password.";
+            errorMessage = error ?? "Login failed. Please try again.";
         }
     }
-
 }
 

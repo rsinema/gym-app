@@ -1,0 +1,47 @@
+@page "/test-auth"
+@using GymApp.Services.LocalStorage
+@inject LocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="container">
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else if (username != null)
+    {
+        <h1>Welcome, @username!</h1>
+    }
+</div>
+
+@code {
+    private string? username;
+    private bool isLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                username = await LocalStorage.GetItemAsync("username");
+                var token = await LocalStorage.GetItemAsync("jwt_token");
+
+                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
+                {
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+
+                isLoading = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
+                Navigation.NavigateTo("/login");
+            }
+        }
+    }
+}

@@ -10,7 +10,7 @@ public class UserRepository : IUserRepository
     private readonly IMongoCollection<User> _userCollection;
 
     public UserRepository(string connString)
-    {
+    {   
         _client = new MongoClient(connString);
         _database = _client.GetDatabase("gym-app");
         _userCollection = _database.GetCollection<User>("user");
@@ -23,7 +23,16 @@ public class UserRepository : IUserRepository
     }
 
     public async Task AddUser(User user)
-    {
-        await _userCollection.InsertOneAsync(user);
+    {   
+        Console.WriteLine("AddUser");
+        Console.WriteLine(user);
+        try
+        {
+            await _userCollection.InsertOneAsync(user);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 }
