@@ -1,11 +1,29 @@
-using GymApp.Repositories;
-using GymApp.Repositories.UserRepository;
+using System.Text;
+using GymApp.Services.LocalStorage;
+using GymApp.Services.AuthService;
 using GymApp.Services.UserService;
 using GymApp.Web.Components;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using GymApp.Repositories.UserRepository;
 
+// Program.cs
 var builder = WebApplication.CreateBuilder(args);
 
-// Add this before building the app
+// Load configuration from appsettings.json and appsettings.{Environment}.json
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+builder.Services.AddHttpContextAccessor();
+
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -16,38 +34,63 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Register LocalStorageService
+builder.Services.AddScoped<LocalStorageService>();
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-// Register your repository and service
-builder.Services.AddScoped<IUserRepository, UserRepository>(provider =>
-    new UserRepository(builder.Configuration.GetConnectionString("Mongo") ?? "MongoKey"));
-
-builder.Services.AddScoped<IUserService, UserService>(provider => {
-    var repository = provider.GetRequiredService<IUserRepository>();
-    var signingKey = builder.Configuration["SigningKey"] ?? "Key";
-    return new UserService(repository, signingKey);
+// Register AuthService
+builder.Services.AddScoped<IAuthService>(provider => {
+    var signingKey = builder.Configuration["SigningKey"] ?? "YourSuperSecretSigningKey123!";
+    return new AuthService(signingKey);
 });
 
-var app = builder.Build();
+// Register UserRepository
+builder.Services.AddScoped<IUserRepository>(provider => {
+    var connectionString = builder.Configuration.GetConnectionString("Mongo") ?? "mongodb://localhost:27017";
+    return new UserRepository(connectionString);
+});
 
-// Add this after var app = builder.Build();
-app.UseCors("AllowAll");
+// Register UserService
+builder.Services.AddScoped<IUserService>(provider => {
+    var userRepository = provider.GetRequiredService<IUserRepository>();
+    var authService = provider.GetRequiredService<IAuthService>();
+    var logger = provider.GetRequiredService<ILogger<UserService>>();
+    return new UserService(userRepository, authService, logger);
+});
+
+// Add Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "your_issuer",
+            ValidAudience = "your_audience",
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["SigningKey"] ?? "YourSuperSecretSigningKey123!"))
+        };
+    });
+
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// app.UseHttpsRedirection();
-
-app.UseAntiforgery();
 app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.UseRouting();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

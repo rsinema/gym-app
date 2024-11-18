@@ -1,8 +1,10 @@
 @page "/register"
+@using GymApp.Services.LocalStorage
 @using GymApp.Services.UserService
 @using GymApp.Models
 @inject NavigationManager Navigation
 @inject IUserService UserService
+@inject LocalStorageService LocalStorage
 @rendermode InteractiveServer
 
 <div class="register-container">
@@ -55,27 +57,27 @@
 
     private async Task HandleRegister()
     {
-        Console.Write("we are here\n");
         showUsernameError = string.IsNullOrEmpty(newUser.Username);
         showPasswordError = string.IsNullOrEmpty(newUser.Password);
-
         showConfirmPasswordError = newUser.Password != confirmPassword;
 
-        if (showUsernameError || showPasswordError || showConfirmPasswordError )
+        if (showUsernameError || showPasswordError || showConfirmPasswordError)
         {
             errorMessage = "Please fill in all required fields correctly.";
             return;
         }
-        var dict = await UserService.RegisterUser(newUser.Username, newUser.Password);
-        Console.WriteLine(dict.GetValueOrDefault("jwt"));
-        if (dict.ContainsKey("jwt"))
+
+        var (success, token, error) = await UserService.RegisterUser(newUser.Username, newUser.Password);
+        
+        if (success && token != null)
         {
-            Navigation.NavigateTo("/home");
-            Console.Write("we did something\n");
+            await LocalStorage.SetItemAsync("jwt_token", token);
+            await LocalStorage.SetItemAsync("username", newUser.Username);
+            Navigation.NavigateTo("/dashboard");
         }
         else
         {
-            errorMessage = "Invalid username or password.";
+            errorMessage = error ?? "Registration failed. Please try again.";
         }
     }
 }
