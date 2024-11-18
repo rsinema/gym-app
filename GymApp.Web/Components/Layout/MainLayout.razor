@@ -1,12 +1,26 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@using GymApp.Services.LocalStorage
+@inject LocalStorageService LocalStorage
 
 <div class="page">
     <main>
         <div class="top-row px-4">
-            <a href="/">Home</a>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-            <img src="Images/GymTrackerLogo.svg" alt="Gym Tracking App Logo" class="app-logo"/>
+            @if (!string.IsNullOrEmpty(username)) 
+            {
+                <!-- Display links for logged-in users -->
+                <a href="/dashboard">Dashboard</a>
+                <a @onclick="Logout">Logout</a>
+                <img src="Images/GymTrackerLogo.svg" alt="Gym Tracking App Logo" class="app-logo" />
+            } 
+            else 
+            {
+                <!-- Display default links for non-logged-in users -->
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+                <img src="Images/GymTrackerLogo.svg" alt="Gym Tracking App Logo" class="app-logo" />
+            }
         </div>
 
         <article class="content px-4">
@@ -20,3 +34,26 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private string? username;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            username = await LocalStorage.GetItemAsync("username");
+            StateHasChanged(); // Trigger a re-render to update the navbar
+        }
+    }
+
+    private async Task Logout()
+    {
+        // Remove user details from local storage and reset username
+        await LocalStorage.RemoveItemAsync("username");
+        await LocalStorage.RemoveItemAsync("jwt_token");
+        username = null; // Clear the username
+        StateHasChanged(); // Update the UI to reflect logout
+        Navigation.NavigateTo("/login");
+    }
+}

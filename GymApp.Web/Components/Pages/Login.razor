@@ -13,7 +13,7 @@
     <form @onsubmit="HandleSubmit">
         <div class="form-group">
             <label for="username">Username</label>
-            <input id="username" type="text" @bind="user.Username" class="form-control" />
+            <input id="username" type="text" @bind="username" class="form-control" />
             @if (showUsernameError)
             {
                 <p class="validation-message">Username is required.</p>
@@ -22,7 +22,7 @@
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input id="password" type="password" @bind="user.Password" class="form-control" />
+            <input id="password" type="password" @bind="password" class="form-control" />
             @if (showPasswordError)
             {
                 <p class="validation-message">Password is required.</p>
@@ -39,19 +39,30 @@
 </div>
 
 @code {
-    private User user = new User(0, "", "");
+    private string username = string.Empty;
+    private string password = string.Empty;
+    private User newUser = new(0, string.Empty, string.Empty);
     private string? errorMessage;
     private bool showUsernameError;
     private bool showPasswordError;
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
-        var (success, token, error) = await UserService.LoginUser(user.Username, user.Password);
+        showUsernameError = string.IsNullOrEmpty(newUser.Username);
+        showPasswordError = string.IsNullOrEmpty(newUser.Password);
+
+        if (!showUsernameError || !showPasswordError)
+        {
+            errorMessage = "Please fill in all required fields correctly.";
+            return;
+        }
+
+        var (success, token, error) = await UserService.LoginUser(username, password);
         
         if (success && token != null)
         {
             await LocalStorage.SetItemAsync("jwt_token", token);
-            await LocalStorage.SetItemAsync("username", user.Username);
+            await LocalStorage.SetItemAsync("username", username);
             Navigation.NavigateTo("/dashboard");
         }
         else
