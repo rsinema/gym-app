@@ -10,8 +10,8 @@
 
     <div class="form-group">
         <label for="username">Username</label>
-        <input id="username" type="text" @bind="_user.Username" class="form-control" @onkeydown="HandleKeyPress" />
-        @if (_showUsernameError)
+        <input id="username" type="text" @bind="user.Username" class="form-control" @onkeydown="HandleKeyPress" />
+        @if (showUsernameError)
         {
             <p class="validation-message">Username is required.</p>
         }
@@ -19,8 +19,8 @@
 
     <div class="form-group">
         <label for="password">Password</label>
-        <input id="password" type="password" @bind="_user.Password" class="form-control" @onkeydown="HandleKeyPress" />
-        @if (_showPasswordError)
+        <input id="password" type="password" @bind="user.Password" class="form-control" @onkeydown="HandleKeyPress" />
+        @if (showPasswordError)
         {
             <p class="validation-message">Password is required.</p>
         }
@@ -30,9 +30,9 @@
         <button class="btn btn-secondary" @onclick="HandleSubmit">Login</button>
     </div>
 
-    @if (!string.IsNullOrEmpty(_errorMessage))
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <p class="error-message">@_errorMessage</p>
+        <p class="error-message">@errorMessage</p>
     }
 </div>
 
@@ -48,9 +48,9 @@
         showUsernameError = string.IsNullOrEmpty(user.Username);
         showPasswordError = string.IsNullOrEmpty(user.Password);
 
-        if (_showUsernameError || _showPasswordError)
+        if (showUsernameError || showPasswordError)
         {
-            _errorMessage = "Please fill in all required fields.";
+            errorMessage = "Please fill in all required fields.";
             return;
         }
         var dict = await UserService.LoginUser(user.Username, user.Password);
@@ -62,7 +62,7 @@
         }
         else
         {
-            _errorMessage = "Invalid username or password.";
+            errorMessage = "Invalid username or password.";
         }
     }
 
@@ -76,8 +76,8 @@
 
     private void ValidateForm()
     {
-        _showUsernameError = string.IsNullOrEmpty(_user.Username);
-        _showPasswordError = string.IsNullOrEmpty(_user.Password);
+        showUsernameError = string.IsNullOrEmpty(user.Username);
+        showPasswordError = string.IsNullOrEmpty(user.Password);
     }
 
 }

@@ -11,6 +11,8 @@ public class UserRepository : IUserRepository
 
     public UserRepository(string connString)
     {
+        Console.WriteLine("Connecting to MongoDB");
+        Console.WriteLine(connString);
         _client = new MongoClient(connString);
         _database = _client.GetDatabase("gym-app");
         _userCollection = _database.GetCollection<User>("user");
