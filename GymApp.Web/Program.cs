@@ -6,6 +6,8 @@ using GymApp.Web.Components;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using GymApp.Repositories.UserRepository;
+using GymApp.Repositories.ExerciseRepository;
+using GymApp.Services.ExerciseService;
 
 // Program.cs
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +57,18 @@ builder.Services.AddScoped<IUserService>(provider => {
     var authService = provider.GetRequiredService<IAuthService>();
     var logger = provider.GetRequiredService<ILogger<UserService>>();
     return new UserService(userRepository, authService, logger);
+});
+
+// Register ExerciseRepository
+builder.Services.AddScoped<IExerciseRepository>(provider => {
+    var connectionString = builder.Configuration.GetConnectionString("Mongo") ?? "mongodb://localhost:27017";
+    return new ExerciseRepository(connectionString);
+});
+
+// Register ExerciseService
+builder.Services.AddScoped<IExerciseService>(provider => {
+    var exerciseReposity = provider.GetRequiredService<IExerciseRepository>();
+    return new ExerciseService(exerciseReposity);
 });
 
 // Add Authentication

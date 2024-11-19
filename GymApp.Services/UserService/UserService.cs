@@ -23,7 +23,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<(bool success, string? token, string? error)> LoginUser(string username, string password)
+    public async Task<(bool success, string? token, string? error, int? userId)> LoginUser(string username, string password)
     {
         try
         {
@@ -31,7 +31,7 @@ public class UserService : IUserService
             
             if (user == null)
             {
-                return (false, null, "User not found");
+                return (false, null, "User not found", null);
             }
 
             var passwordMatches =
@@ -39,20 +39,20 @@ public class UserService : IUserService
 
             if (!passwordMatches)
             {
-                return (false, null, "Invalid password");
+                return (false, null, "Invalid password", null);
             }
 
             var token = _authService.GenerateJWT(user);
-            return (true, token, null);
+            return (true, token, null, user.Id);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login");
-            return (false, null, "Login failed");
+            return (false, null, "Login failed", null);
         }
     }
 
-    public async Task<(bool success, string? token, string? error)> RegisterUser(string username, string password)
+    public async Task<(bool success, string? token, string? error, int? userId)> RegisterUser(string username, string password)
     {
         try
         {
@@ -64,12 +64,12 @@ public class UserService : IUserService
             await _userRepository.AddUser(newUser);
             var token = _authService.GenerateJWT(newUser);
             
-            return (true, token, null);
+            return (true, token, null, newUser.Id);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during registration");
-            return (false, null, "Registration failed");
+            return (false, null, "Registration failed", null);
         }
     }
 

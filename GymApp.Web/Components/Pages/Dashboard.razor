@@ -1,7 +1,10 @@
 @page "/dashboard"
+@using GymApp.Services.ExerciseService
+@using GymApp.Models
 @using GymApp.Services.LocalStorage
 @inject LocalStorageService LocalStorage
 @inject NavigationManager Navigation
+@inject IExerciseService ExerciseService
 @rendermode InteractiveServer
 
 <div class="dashboard_container">
@@ -19,6 +22,10 @@
                 <h2>Add Lift Exercise</h2>
                 <form @onsubmit="AddLiftExercise">
                     <div class="exercise_group">
+                        <label for="liftName">Name:</label>
+                        <input type="text" id="liftName" @bind="liftName" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
                         <label for="liftWeight">Weight (lbs):</label>
                         <input type="number" id="liftWeight" @bind="liftWeight" required class="form-control" />
                     </div>
@@ -34,6 +41,10 @@
             <div class="cardio_form">
                 <h2>Add Cardio Exercise</h2>
                 <form @onsubmit="AddCardioExercise">
+                    <div class="exercise_group">
+                        <label for="cardioName">Name:</label>
+                        <input type="text" id="cardioName" @bind="cardioName" required class="form-control" />
+                    </div>
                     <div class="exercise_group">
                         <label for="cardioTime">Time (minutes):</label>
                         <input type="number" id="cardioTime" @bind="cardioTime" required class="form-control" />
@@ -52,15 +63,15 @@
             @if (exerciseEntries.Any())
             {
                 <ul>
-                    @foreach (ExerciseEntry entry in exerciseEntries.OrderBy(e => e.Date))
+                    @foreach (Exercise entry in exerciseEntries.OrderBy(e => e.Date))
                     {
                         <li>
                             @entry.Date: @entry.Type Exercise - 
-                            @if (entry.Type == "Lift")
+                            @if (entry.Type.ToString() == "Lift")
                             {
                                 <p>Weight: @entry.Weight kg, Reps: @entry.Reps sets</p>
                             }
-                            else if (entry.Type == "Cardio")
+                            else if (entry.Type.ToString() == "Cardio")
                             {
                                 <p>Time: @entry.Time minutes, Distance: @entry.Distance km</p>
                             }
@@ -78,18 +89,20 @@
 
 @code {
     private string? username;
+    private int userId;
     private bool isLoading = true;
-    private DateTime exerciseDate = DateTime.Now;
 
     // Inputs for Lift Exercise
+    private string liftName = string.Empty;
     private int liftWeight;
     private int liftReps;
 
     // Inputs for Cardio Exercise
+    private string cardioName = string.Empty;
     private int cardioTime;
     private double cardioDistance;
 
-    private List<ExerciseEntry> exerciseEntries = new();
+    private List<Exercise>? exerciseEntries = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -99,6 +112,8 @@
             {
                 username = await LocalStorage.GetItemAsync("username");
                 var token = await LocalStorage.GetItemAsync("jwt_token");
+                var userIdString = await LocalStorage.GetItemAsync("userId");
+                userId = int.Parse(userIdString);
 
                 if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
                 {
@@ -106,6 +121,11 @@
                     return;
                 }
 
+                exerciseEntries = await ExerciseService.GetAllExercisesAsync(userId);
+                if(exerciseEntries == null)
+                {
+                    exerciseEntries = new();
+                }
                 isLoading = false;
                 StateHasChanged();
             }
@@ -124,17 +144,14 @@
             // Show error message
             return;
         }
-        exerciseEntries.Add(new ExerciseEntry
-        {
-            Type = "Lift",
-            Date = exerciseDate,
-            Weight = liftWeight,
-            Reps = liftReps
-        });
+        Exercise newExercise = new(userId, liftName, ExerciseType.Lift, weight: liftWeight, reps: liftReps);
+        exerciseEntries.Add(newExercise);
+        Exercise? result = await ExerciseService.AddExerciseAsync(newExercise);
 
         // Clear inputs
         liftWeight = 0;
         liftReps = 0;
+        liftName = string.Empty;
 
         await Task.CompletedTask;
 
@@ -147,28 +164,15 @@
             // Show error message
             return;
         }
-        exerciseEntries.Add(new ExerciseEntry
-        {
-            Type = "Cardio",
-            Date = exerciseDate,
-            Time = cardioTime,
-            Distance = cardioDistance
-        });
+        Exercise newExercise = new(userId, cardioName, ExerciseType.Cardio, time: cardioTime, distance: cardioDistance);
+        exerciseEntries.Add(newExercise);
+        Exercise? result = await ExerciseService.AddExerciseAsync(newExercise);
 
         // Clear inputs
         cardioTime = 0;
         cardioDistance = 0;
+        cardioName = string.Empty;
 
         await Task.CompletedTask;
-    }
-
-    private class ExerciseEntry
-    {
-        public string Type { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
-        public int Weight { get; set; }
-        public int Reps { get; set; }
-        public int Time { get; set; }
-        public double Distance { get; set; }
     }
 }

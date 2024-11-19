@@ -67,12 +67,13 @@
             return;
         }
 
-        var (success, token, error) = await UserService.RegisterUser(newUser.Username, newUser.Password);
+        var (success, token, error, userId) = await UserService.RegisterUser(newUser.Username, newUser.Password);
         
         if (success && token != null)
         {
             await LocalStorage.SetItemAsync("jwt_token", token);
             await LocalStorage.SetItemAsync("username", newUser.Username);
+            await LocalStorage.SetItemAsync("userId", userId.ToString());
             Navigation.NavigateTo("/dashboard");
         }
         else

@@ -1,11 +1,19 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <div class="page">
     <main>
         <div class="top-row px-4">
-            <a href="/">Home</a>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
+            @if (CurrentNav == "Dashboard")
+            {
+                <a href="/" onclick="HandleLogout()">Logout</a>
+            }
+            else
+            {
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            }
             <img src="Images/GymTrackerLogo.svg" alt="Gym Tracking App Logo" class="app-logo"/>
         </div>
 
@@ -20,3 +28,42 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private string CurrentNav { get; set; } = "Default";
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        UpdateNavBar(NavigationManager.Uri);
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        UpdateNavBar(e.Location);
+        StateHasChanged();
+    }
+
+    private void UpdateNavBar(string uri)
+    {
+        if (uri.Contains("/dashboard"))
+        {
+            CurrentNav = "Dashboard";
+        }
+        else
+        {
+            CurrentNav = "Default";
+        }
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private async void HandleLogout()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
