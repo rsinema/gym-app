@@ -69,11 +69,11 @@
                             @entry.Date: @entry.Type Exercise - 
                             @if (entry.Type.ToString() == "Lift")
                             {
-                                <p>Weight: @entry.Weight kg, Reps: @entry.Reps sets</p>
+                                <p>Weight: @entry.Weight lbs, Reps: @entry.Reps sets</p>
                             }
                             else if (entry.Type.ToString() == "Cardio")
                             {
-                                <p>Time: @entry.Time minutes, Distance: @entry.Distance km</p>
+                                <p>Time: @entry.Time minutes, Distance: @entry.Distance miles</p>
                             }
                         </li>
                     }
