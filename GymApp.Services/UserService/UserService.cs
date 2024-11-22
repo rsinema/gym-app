@@ -30,9 +30,13 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
         {
             var payload = JWT.JsonWebToken.Decode(jwt, signingKey);
             dynamic obj = JObject.Parse(payload);
-            TimeSpan ts = DateTime.UtcNow - DateTime.Parse(obj.expires.ToString());
 
-            return (obj.user_id == userId) && ts.Days < 1;
+            // Ensure the token is not expired
+            if (DateTime.UtcNow > DateTime.Parse(obj.expires.ToString()))
+                return false;
+
+            // Check user ID
+            return obj.user_id == userId;
         } 
         catch (Exception)
         {
@@ -66,14 +70,16 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
 
     }
 
-    // TODO: check if user exists before creating a new one
     public async Task<Dictionary<string, object>> RegisterUser(string username, string plainPassword)
     {
         var hashedPassword = _hasher.HashPassword(signingKey , plainPassword);
         var random = new Random();
         var id = random.Next(100_000_000, 1_000_000_000);
         var newUser = new User(id, username, hashedPassword);
-        
+
+        if (await userRepository.UserExistsAsync(username))
+            throw new ArgumentException($"User with username '{username}' already exists.");
+
         try
         {
             await userRepository.AddUser(newUser);
@@ -86,14 +92,17 @@ public class UserService(IUserRepository userRepository, string signingKey) : IU
             
             return result;
         } 
-        catch 
+        catch (Exception ex)
         {
-            throw new Exception("Error registering user.");
+            throw new Exception("Error registering user.", ex);
         }
     }
     
     public async Task<User> GetUser(string username)
     {
+        if (string.IsNullOrWhiteSpace(username))
+            throw new ArgumentException("Username must be provided");
+
         try
         {
             return await userRepository.GetUser(username);

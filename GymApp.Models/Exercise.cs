@@ -9,6 +9,6 @@ public class Exercise(int userId, string name, ExerciseType type)
     public ExerciseType Type { get; } = type;
     public int? Weight { get; set; }
     public int? Reps { get; set; }
-    public string? Time { get; set; }
-    public string? Distance { get; set; }
+    public int? Time { get; set; }
+    public double? Distance { get; set; }
 }

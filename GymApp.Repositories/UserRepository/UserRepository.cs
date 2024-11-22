@@ -15,11 +15,19 @@ public class UserRepository : IUserRepository
         _database = _client.GetDatabase("gym-app");
         _userCollection = _database.GetCollection<User>("user");
     }
+    public async Task<bool> UserExistsAsync(string username)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+        var user = await _userCollection.Find(filter).FirstOrDefaultAsync();
+        return user != null;
+    }
 
     public async Task<User> GetUser(string username)
     {
         var filter = Builders<User>.Filter.Eq(u => u.Username, username);
-        return await _userCollection.Find(filter).FirstOrDefaultAsync();
+        User user = await _userCollection.Find(filter).FirstOrDefaultAsync();
+        
+        return user;
     }
 
     public async Task AddUser(User user)

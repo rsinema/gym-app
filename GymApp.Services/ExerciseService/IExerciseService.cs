@@ -4,11 +4,11 @@ namespace GymApp.Services.ExerciseService
 {
     internal interface IExerciseService
     {
-        Task<Exercise?> GetExerciseAsync(int id);
+        Task<Exercise> GetExerciseAsync(int id);
 
-        Task<List<Exercise>?> GetAllExercisesAsync(int userId);
+        Task<List<Exercise>> GetAllExercisesAsync(int userId);
 
-        Task<Exercise?> AddExerciseAsync(Exercise exercise);
+        Task<Exercise> AddExerciseAsync(Exercise exercise);
 
 
     }
