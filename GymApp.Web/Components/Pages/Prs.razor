@@ -1,4 +1,4 @@
-@page "/dashboard"
+@page "/prs"
 @using GymApp.Services.ExerciseService
 @using GymApp.Models
 @using GymApp.Services.LocalStorage
@@ -16,49 +16,7 @@
     {
         <h1>Welcome, @username!</h1>
         <div style="width:fit-content; margin:0 auto;">
-            <button @onclick="GoToPrs" style="margin:auto 10px 10px; border: none; border-radius: 8px; background-color: rgb(2, 191, 2); color:white">View Personal Records</button>
-        </div>
-
-        <!-- Lift Form -->
-        <div class="exercise_container">
-            <div class="lift_form">
-                <h2>Add Lift Exercise</h2>
-                <form @onsubmit="AddLiftExercise">
-                    <div class="exercise_group">
-                        <label for="liftName">Name:</label>
-                        <input type="text" id="liftName" @bind="liftName" required class="form-control" />
-                    </div>
-                    <div class="exercise_group">
-                        <label for="liftWeight">Weight (lbs):</label>
-                        <input type="number" id="liftWeight" @bind="liftWeight" required class="form-control" />
-                    </div>
-                    <div class="exercise_group">
-                        <label for="liftReps">Reps:</label>
-                        <input type="number" id="liftReps" @bind="liftReps" required class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-lift">Add Lift Exercise</button>
-                </form>
-            </div>
-
-            <!-- Cardio Form -->
-            <div class="cardio_form">
-                <h2>Add Cardio Exercise</h2>
-                <form @onsubmit="AddCardioExercise">
-                    <div class="exercise_group">
-                        <label for="cardioName">Name:</label>
-                        <input type="text" id="cardioName" @bind="cardioName" required class="form-control" />
-                    </div>
-                    <div class="exercise_group">
-                        <label for="cardioTime">Time (minutes):</label>
-                        <input type="number" id="cardioTime" @bind="cardioTime" required class="form-control" />
-                    </div>
-                    <div class="exercise_group">
-                        <label for="cardioDistance">Distance (miles):</label>
-                        <input type="number" id="cardioDistance" @bind="cardioDistance" required class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-cardio">Add Cardio Exercise</button>
-                </form>
-            </div>
+            <button @onclick="GoToDashboard" style="margin:auto 10px 10px; border: none; border-radius: 8px; background-color: rgb(2, 191, 2); color:white">Back To Dashboard</button>
         </div>
 
         <!-- Week Calendar -->
@@ -85,7 +43,7 @@
             }
             else
             {
-                <p>No exercises scheduled yet.</p>
+                <p>No Personal Records</p>
             }
         </div>
     }
@@ -130,6 +88,15 @@
                 {
                     exerciseEntries = new();
                 }
+                // find unique exercises names
+                // for each unique exercise name, find the max weight or min time
+                var liftList = new List<Exercise>();
+                var cardioList = new List<Exercise>();
+                liftList = exerciseEntries.Where(e => e.Type == ExerciseType.Lift).GroupBy(e => e.Name).Select(group => group.OrderByDescending(e => e.Weight).First()).ToList();
+                cardioList = exerciseEntries.Where(e => e.Type == ExerciseType.Cardio).GroupBy(e => (e.Name, e.Distance)).Select(group => group.OrderByDescending(e => e.Time).Last()).ToList();
+                exerciseEntries = cardioList;
+                exerciseEntries.AddRange(liftList);
+                //cardioList = exerciseEntries.GroupBy(e => e.Name).Select(group => group.OrderByDescending(e => e.Weight).Where(e => e.Type == ExerciseType.Lift).First()).ToList(); *@
                 isLoading = false;
                 StateHasChanged();
             }
@@ -161,8 +128,8 @@
 
     }
 
-    private void GoToPrs() {
-        Navigation.NavigateTo("/prs");
+    private void GoToDashboard() {
+        Navigation.NavigateTo("/dashboard");
     }
     private async Task AddCardioExercise()
     {
