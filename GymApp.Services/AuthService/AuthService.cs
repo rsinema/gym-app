@@ -20,7 +20,7 @@ public class AuthService : IAuthService
         var key = Encoding.UTF8.GetBytes(_signingKey);
         var securityKey = new SymmetricSecurityKey(key);
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
+        
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
