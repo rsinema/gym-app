@@ -2,7 +2,7 @@
 
 namespace GymApp.Services.ExerciseService
 {
-    internal interface IExerciseService
+    public interface IExerciseService
     {
         Task<Exercise?> GetExerciseAsync(int id);
 

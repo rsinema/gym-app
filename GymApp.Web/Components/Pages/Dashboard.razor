@@ -1,0 +1,178 @@
+@page "/dashboard"
+@using GymApp.Services.ExerciseService
+@using GymApp.Models
+@using GymApp.Services.LocalStorage
+@inject LocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@inject IExerciseService ExerciseService
+@rendermode InteractiveServer
+
+<div class="dashboard_container">
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else if (username != null)
+    {
+        <h1>Welcome, @username!</h1>
+
+        <!-- Lift Form -->
+        <div class="exercise_container">
+            <div class="lift_form">
+                <h2>Add Lift Exercise</h2>
+                <form @onsubmit="AddLiftExercise">
+                    <div class="exercise_group">
+                        <label for="liftName">Name:</label>
+                        <input type="text" id="liftName" @bind="liftName" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="liftWeight">Weight (lbs):</label>
+                        <input type="number" id="liftWeight" @bind="liftWeight" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="liftReps">Reps:</label>
+                        <input type="number" id="liftReps" @bind="liftReps" required class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-lift">Add Lift Exercise</button>
+                </form>
+            </div>
+
+            <!-- Cardio Form -->
+            <div class="cardio_form">
+                <h2>Add Cardio Exercise</h2>
+                <form @onsubmit="AddCardioExercise">
+                    <div class="exercise_group">
+                        <label for="cardioName">Name:</label>
+                        <input type="text" id="cardioName" @bind="cardioName" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="cardioTime">Time (minutes):</label>
+                        <input type="number" id="cardioTime" @bind="cardioTime" required class="form-control" />
+                    </div>
+                    <div class="exercise_group">
+                        <label for="cardioDistance">Distance (miles):</label>
+                        <input type="number" id="cardioDistance" @bind="cardioDistance" required class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-cardio">Add Cardio Exercise</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Week Calendar -->
+        <div class="week-calendar">
+            @if (exerciseEntries.Any())
+            {
+                <ul>
+                    @foreach (Exercise entry in exerciseEntries.OrderBy(e => e.Date))
+                    {
+                        <li>
+                            @entry.Date: @entry.Type Exercise - 
+                            @if (entry.Type.ToString() == "Lift")
+                            {
+                                <p>Weight: @entry.Weight lbs, Reps: @entry.Reps sets</p>
+                            }
+                            else if (entry.Type.ToString() == "Cardio")
+                            {
+                                <p>Time: @entry.Time minutes, Distance: @entry.Distance miles</p>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No exercises scheduled yet.</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string? username;
+    private int userId;
+    private bool isLoading = true;
+
+    // Inputs for Lift Exercise
+    private string liftName = string.Empty;
+    private int liftWeight;
+    private int liftReps;
+
+    // Inputs for Cardio Exercise
+    private string cardioName = string.Empty;
+    private int cardioTime;
+    private double cardioDistance;
+
+    private List<Exercise>? exerciseEntries = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                username = await LocalStorage.GetItemAsync("username");
+                var token = await LocalStorage.GetItemAsync("jwt_token");
+                var userIdString = await LocalStorage.GetItemAsync("userId");
+                userId = int.Parse(userIdString);
+
+                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
+                {
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+
+                exerciseEntries = await ExerciseService.GetAllExercisesAsync(userId);
+                if(exerciseEntries == null)
+                {
+                    exerciseEntries = new();
+                }
+                isLoading = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
+                Navigation.NavigateTo("/login");
+            }
+        }
+    }
+
+    private async Task AddLiftExercise()
+    {
+        if (liftWeight <= 0 || liftReps <= 0)
+        {
+            // Show error message
+            return;
+        }
+        Exercise newExercise = new(userId, liftName, ExerciseType.Lift, weight: liftWeight, reps: liftReps);
+        exerciseEntries.Add(newExercise);
+        Exercise? result = await ExerciseService.AddExerciseAsync(newExercise);
+
+        // Clear inputs
+        liftWeight = 0;
+        liftReps = 0;
+        liftName = string.Empty;
+
+        await Task.CompletedTask;
+
+    }
+
+    private async Task AddCardioExercise()
+    {
+        if (cardioTime <= 0 || cardioDistance <= 0)
+        {
+            // Show error message
+            return;
+        }
+        Exercise newExercise = new(userId, cardioName, ExerciseType.Cardio, time: cardioTime, distance: cardioDistance);
+        exerciseEntries.Add(newExercise);
+        Exercise? result = await ExerciseService.AddExerciseAsync(newExercise);
+
+        // Clear inputs
+        cardioTime = 0;
+        cardioDistance = 0;
+        cardioName = string.Empty;
+
+        await Task.CompletedTask;
+    }
+}

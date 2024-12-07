@@ -10,27 +10,19 @@
 <div class="login-container">
     <h2>Login</h2>
 
-    <form @onsubmit="HandleSubmit">
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input id="username" type="text" @bind="user.Username" class="form-control" />
-            @if (showUsernameError)
-            {
-                <p class="validation-message">Username is required.</p>
-            }
-        </div>
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" @bind="user.Username" class="form-control" />
+    </div>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input id="password" type="password" @bind="user.Password" class="form-control" />
-            @if (showPasswordError)
-            {
-                <p class="validation-message">Password is required.</p>
-            }
-        </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" @bind="user.Password" class="form-control"/>
+    </div>
 
-        <button type="submit" class="btn btn-secondary">Login</button>
-    </form>
+    <div class="button-container">
+        <button class="btn btn-secondary" @onclick="HandleSubmit">Login</button>
+    </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -39,20 +31,21 @@
 </div>
 
 @code {
-    private User user = new User(0, "", "");
+    private string username = string.Empty;
+    private string password = string.Empty;
+    private User newUser = new(0, string.Empty, string.Empty);
     private string? errorMessage;
-    private bool showUsernameError;
-    private bool showPasswordError;
 
-    private async void HandleSubmit()
+    private async Task HandleSubmit()
     {
-        var (success, token, error) = await UserService.LoginUser(user.Username, user.Password);
+        var (success, token, error, userId) = await UserService.LoginUser(user.Username, user.Password);
         
         if (success && token != null)
         {
             await LocalStorage.SetItemAsync("jwt_token", token);
             await LocalStorage.SetItemAsync("username", user.Username);
-            Navigation.NavigateTo("/test-auth");
+            await LocalStorage.SetItemAsync("userId", userId.ToString());
+            Navigation.NavigateTo("/dashboard");
         }
         else
         {
