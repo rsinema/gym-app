@@ -296,6 +296,11 @@ h1:focus {
     color: #888;
 }
 
+.history-date{
+    float: right;
+    margin-top: -15px;
+}
+
 /* Responsiveness: Stack forms on smaller screens */
 @media (max-width: 768px) {
     .exercise_container {
