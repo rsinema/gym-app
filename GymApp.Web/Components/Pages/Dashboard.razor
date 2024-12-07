@@ -66,14 +66,15 @@
                     @foreach (Exercise entry in exerciseEntries.OrderBy(e => e.Date))
                     {
                         <li>
-                            @entry.Date: @entry.Type Exercise - 
+                            <h3>@entry.Name</h3>
+                            <h5 class="history-date">@entry.Date</h5>
                             @if (entry.Type.ToString() == "Lift")
                             {
-                                <p>Weight: @entry.Weight lbs, Reps: @entry.Reps sets</p>
+                                <p>@entry.Weight lbs for @entry.Reps reps</p>
                             }
                             else if (entry.Type.ToString() == "Cardio")
                             {
-                                <p>Time: @entry.Time minutes, Distance: @entry.Distance miles</p>
+                                <p>@entry.Distance miles in @entry.Time minutes</p>
                             }
                         </li>
                     }
