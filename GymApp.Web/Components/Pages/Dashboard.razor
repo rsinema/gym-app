@@ -61,12 +61,44 @@
             </div>
         </div>
 
+        <!-- Filter Dropdown -->
+        <div class="filter-container">
+            <label for="exerciseFilter">Filter by Exercise Name:</label>
+            <select id="exerciseFilter" @bind="SelectedExerciseName" class="form-control">
+                <option value="">All</option>
+                @foreach (var exercise in exerciseEntries.Select(e => e.Name).Distinct())
+                {
+                    <option value="@exercise">@exercise</option>
+                }
+            </select>
+        </div>
+
         <!-- Week Calendar -->
         <div class="week-calendar">
-            @if (exerciseEntries.Any())
+            @if (exerciseEntries.Any() && selectedExerciseName == string.Empty)
             {
                 <ul>
                     @foreach (Exercise entry in exerciseEntries.OrderBy(e => e.Date))
+                    {
+                        <li>
+                            <h3>@entry.Name</h3>
+                            <h5 class="history-date">@entry.Date</h5>
+                            @if (entry.Type.ToString() == "Lift")
+                            {
+                                <p>@entry.Weight lbs for @entry.Reps reps</p>
+                            }
+                            else if (entry.Type.ToString() == "Cardio")
+                            {
+                                <p>@entry.Distance miles in @entry.Time minutes</p>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else if (filteredExerciseEntries.Any())
+            {
+                <ul>
+                    @foreach (Exercise entry in filteredExerciseEntries.OrderBy(e => e.Date))
                     {
                         <li>
                             <h3>@entry.Name</h3>
@@ -107,7 +139,8 @@
     private double cardioDistance;
 
     private List<Exercise>? exerciseEntries = new();
-
+    private List<Exercise>? filteredExerciseEntries = new List<Exercise>();
+    private string selectedExerciseName = string.Empty;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -131,6 +164,21 @@
                     exerciseEntries = new();
                 }
                 isLoading = false;
+                if (!string.IsNullOrEmpty(selectedExerciseName))
+                {
+                    exerciseEntries = exerciseEntries
+                        .Where(e => e.Name.Equals(selectedExerciseName, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                else
+                {
+                    exerciseEntries = exerciseEntries
+                        .GroupBy(e => (e.Name, e.Distance))
+                        .Select(group => group
+                            .OrderByDescending(e => e.Weight)
+                            .First())
+                        .ToList();
+                }
                 StateHasChanged();
             }
             catch (Exception ex)
@@ -138,6 +186,33 @@
                 Console.WriteLine($"Error in OnAfterRenderAsync: {ex.Message}");
                 Navigation.NavigateTo("/login");
             }
+        }
+    }
+
+    private string SelectedExerciseName
+    {
+        get => selectedExerciseName;
+        set
+        {
+            if (selectedExerciseName != value)
+            {
+                selectedExerciseName = value;
+                FilterExercises();
+            }
+        }
+    }
+
+    private void FilterExercises()
+    {
+        if (string.IsNullOrEmpty(selectedExerciseName))
+        {
+            filteredExerciseEntries = exerciseEntries;
+        }
+        else
+        {
+            filteredExerciseEntries = exerciseEntries
+                .Where(exercise => exercise.Name.Contains(selectedExerciseName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
     }
 
